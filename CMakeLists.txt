@@ -7,4 +7,5 @@ add_executable(NaiveGomoku main.cpp
         chessboard.h
         judge.h
         player.h
-        scheduler.h)
+        scheduler.h
+        utils.h)

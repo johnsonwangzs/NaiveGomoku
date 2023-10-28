@@ -13,37 +13,40 @@ public:
 };
 
 // 黑色棋子
-class BlackChessPiece : ChessPiece {
+class BlackChessPiece : public ChessPiece {
 public:
     static string pieceTypeName;
     static string figure[2];
-    const int pieceTypeCode = 1;
+    static int pieceTypeCode;
 };
 
 string BlackChessPiece::pieceTypeName = "黑子";
 string BlackChessPiece::figure[2] = {"▪", "●"};
+int BlackChessPiece::pieceTypeCode = 1;
 
 // 白色棋子
-class WhiteChessPiece : ChessPiece {
+class WhiteChessPiece : public ChessPiece {
 public:
     static string pieceTypeName;
     static string figure[2];
-    const int pieceTypeCode = 2;
+    static int pieceTypeCode;
 };
 
 string WhiteChessPiece::pieceTypeName = "白子";
 string WhiteChessPiece::figure[2] = {"▫", "○"};
+int WhiteChessPiece::pieceTypeCode = 2;
 
 // 空位
-class BlankPiece : ChessPiece {
+class BlankPiece : public ChessPiece {
 public:
     static string pieceTypeName;
     static string figure;
-    const int pieceTypeCode = 0;
+    static int pieceTypeCode;
 };
 
 string BlankPiece::pieceTypeName = "空位";
 string BlankPiece::figure = "·";
+int BlankPiece::pieceTypeCode = 0;
 
 // 棋盘
 class ChessBoard {
@@ -63,11 +66,16 @@ public:
     void print_single_chess_piece(int x, int y);  // 在棋盘上打印单个棋子
     void create_new_chessboard();  // 产生新棋盘
     void show();  // 打印当前棋盘
+    void set_new_chess_piece(int chessPieceType, int xPos, int yPos);  // 落子
 };
 
 ChessBoard::ChessBoard() {
     cout << "> 正在构造棋盘..." << endl;
     create_new_chessboard();
+}
+
+ChessBoard::~ChessBoard() {
+    cout << "> 正在销毁本局棋盘..." << endl;
 }
 
 void ChessBoard::create_new_chessboard() {
@@ -80,7 +88,7 @@ void ChessBoard::choose_board_style() {
     string myStyle;
     while (true) {
         cout << "> 请选择棋盘样式：\n"
-                "  0. 小棋盘(recommend)\n"
+                "  0. 小棋盘(recommended)\n"
                 "  1. 大棋盘"  << endl;
         cin >> myStyle;
         if (strcmp(myStyle.c_str(), "0") == 0 || strcmp(myStyle.c_str(), "1") == 0) {
@@ -107,7 +115,7 @@ void ChessBoard::print_single_chess_piece(int x, int y) {
 }
 
 void ChessBoard::show() {
-    cout << endl << "    "
+    cout << endl << "   "
          << BlackChessPiece::pieceTypeName << ": " << BlackChessPiece::figure[boardStyle] << "    "
          << WhiteChessPiece::pieceTypeName << ": " << WhiteChessPiece::figure[boardStyle] << "    "
          << BlankPiece::pieceTypeName << ": " << BlankPiece::figure << endl;
@@ -159,8 +167,8 @@ void ChessBoard::show() {
     cout << endl;
 }
 
-ChessBoard::~ChessBoard() {
-    cout << "> 正在销毁本局棋盘..." << endl;
+void ChessBoard::set_new_chess_piece(int chessPieceType, int xPos, int yPos) {
+    chessPieceInBoard[xPos][yPos] = chessPieceType;
 }
 
 #endif //NAIVEGOMOKU_CHESSBOARD_H

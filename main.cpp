@@ -1,8 +1,9 @@
 #include <iostream>
-#include <typeinfo>
+#include <cstring>
+#include "utils.h"
 #include "chessboard.h"
-#include "judge.h"
 #include "player.h"
+#include "judge.h"
 #include "scheduler.h"
 
 using namespace std;
@@ -21,6 +22,9 @@ int main() {
     auto *scheduler = new Scheduler();
 
     delete scheduler;
-    cout << "> 现在可以退出；要重新开始游戏，请重启程序" << endl;
+//    string yInput = "O";
+//    cout << strcmp(yInput.c_str(), "A") << endl;
+//    cout << strcmp(yInput.c_str(), "O") << endl;
+    cout << "> 现在可以退出；要重新开始游戏，请重启程序！" << endl;
     return 0;
 }
