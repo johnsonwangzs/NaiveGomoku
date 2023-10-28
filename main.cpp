@@ -1,4 +1,5 @@
 #include <iostream>
+#include <typeinfo>
 #include "chessboard.h"
 #include "judge.h"
 #include "player.h"
@@ -18,9 +19,8 @@ class BlackChessPiece;
 int main() {
     cout << "> 开始初始化..." << endl;
     auto *scheduler = new Scheduler();
-    auto *chessboard = new ChessBoard();
-    chessboard->show(1);
+
     delete scheduler;
-    delete chessboard;
+    cout << "> 现在可以退出；要重新开始游戏，请重启程序" << endl;
     return 0;
 }
