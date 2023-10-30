@@ -1,23 +1,17 @@
 #ifndef NAIVEGOMOKU_UTILS_H
 #define NAIVEGOMOKU_UTILS_H
 
+#include <iostream>
+
 using namespace std;
 
+// 测试是否为数字
 bool isDigit(char a);
+
+// 测试是否为整数
 bool test_integer(string s);
 
-bool isDigit(char a) {
-    if (a - '0' == 0 || a - '0' == 1 || a - '0' == 2 || a - '0' == 3 || a - '0' == 4 ||
-        a - '0' == 5 || a - '0' == 6 || a - '0' == 7 || a - '0' == 8 || a - '0' == 9)
-        return true;
-    return false;
-}
+// 输入转化、判断合法性(string->int)
+bool transform_position_name(const string &xInput, const string &yInput, int &xPos, int &yPos);
 
-bool test_integer(string s) {
-    for (int i = 0; i < s.length(); i++) {
-        if (!isDigit(s[i]))
-            return false;
-    }
-    return true;
-}
 #endif //NAIVEGOMOKU_UTILS_H
