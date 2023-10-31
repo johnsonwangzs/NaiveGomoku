@@ -5,12 +5,12 @@ int Player::getPlayerTypeCode() {
     return playerTypeCode;
 }
 
-int Player::getPlayerHand() {
-    return playerHand;
+int Player::getPlayerChessPieceType() {
+    return playerChessPieceType;
 }
 
-void Player::setPlayerHand(int myHand) {
-    playerHand = myHand;
+void Player::setPlayerChessPieceType(int myHand) {
+    playerChessPieceType = myHand;
 }
 
 BotPlayer::BotPlayer() {

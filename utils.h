@@ -6,7 +6,7 @@
 using namespace std;
 
 // 测试是否为数字
-bool isDigit(char a);
+bool is_digit(char a);
 
 // 测试是否为整数
 bool test_integer(string s);

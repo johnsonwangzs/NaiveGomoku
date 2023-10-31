@@ -7,6 +7,9 @@
 
 
 Scheduler::Scheduler() {
+    gameCnt = 0;
+    botWinCnt = 0;
+    humanWinCnt = 0;
     cout << "> 正在创建调度器..." << endl;
     schedule_game();
 }
@@ -65,55 +68,37 @@ void Scheduler::start_new_game() {
 
     // 对局过程
     cout << "\n> 本局比赛开始！" << endl;
-    // 判断先手
-    int firstHand = decide_first_hand();
-    if (firstHand == 1) {  // 1：人类玩家为先手
-        judge->whoIsFirstHand = humanPlayer->getPlayerTypeCode();
-        botPlayer->setPlayerHand(WhiteChessPiece::pieceTypeCode);  // 电脑执白子
-        humanPlayer->setPlayerHand(BlackChessPiece::pieceTypeCode);  // 人类玩家执黑子
-        cout << "> 人类玩家为先手，电脑为后手！" << endl;
-    } else if (firstHand == 0) { // 0：电脑为先手，执黑子
-        judge->whoIsFirstHand = botPlayer->getPlayerTypeCode();
-        botPlayer->setPlayerHand(BlackChessPiece::pieceTypeCode);
-        humanPlayer->setPlayerHand(WhiteChessPiece::pieceTypeCode);
-        cout << "> 电脑为先手，人类玩家为后手！" << endl;
-    }
+
+    // 决定两方谁为先手，谁为后手
+    decide_first_hand(botPlayer, humanPlayer, judge);
 
     // 第一次：黑方必须在天元H8落子
-    if (judge->whoIsFirstHand == 0) {  // 电脑为先手
-        int x, y;
-        if (!transform_position_name("8", "H", x, y)) {
-            cout << "> Error：棋盘无法落子！" << endl;
-            return;
-        }
-        if (judge->judge_first_action_validity(x, y)) {
-            chessBoard->set_new_chess_piece(botPlayer->getPlayerHand(), x, y);
-            chessBoard->show();
-        }
-    } else {  // 人类玩家为先手
-        int x, y;
-        while (true) {
-            string xInput, yInput;
-            cout << "> 人类玩家为先手，请输入落子位置（先输入行号（数字）再输入列号（字母），用空格隔开）：";
-            cin >> xInput >> yInput;  // 获取人类玩家键盘输入
-            if (transform_position_name(xInput, yInput, x, y)) {
-                if (judge->judge_first_action_validity(x, y)) {
-                    chessBoard->set_new_chess_piece(humanPlayer->getPlayerHand(), x, y);
-                    chessBoard->show();
-                    break;
-                } else {
-                    cout << "  输入位置不合法，先手（黑子）初次落子必须在天元（H8）位置！" << endl;
-                }
-            }
-        }
-    }
+    set_first_chess_piece(botPlayer, humanPlayer, judge, chessBoard);
 
     // 连续回合
-//    while (true) {
-//        if (!judge->continue_game()) {  // 检查是否能继续对局
-//            break;
-//        }
-//    }
+    while (true) {
+        // 检查
+        if (lastStepPlayer == humanPlayer->getPlayerTypeCode()) {
+            if (!judge->continue_game(humanPlayer, chessBoard, lastStepXPos, lastStepYPos)) {  // 检查人类玩家落子是否能赢
+                humanWinCnt++;
+                break;
+            }
+        } else if (lastStepPlayer == botPlayer->getPlayerTypeCode()) {
+            if (!judge->continue_game(botPlayer, chessBoard, lastStepXPos, lastStepYPos)) {  // 检查电脑落子是否能赢
+                botWinCnt++;
+                break;
+            }
+        }
+        // 落子
+        if (nextStepPlayer == humanPlayer->getPlayerTypeCode()) {  // 当前轮到人类玩家落子
+            set_human_player_chess_piece(botPlayer, humanPlayer, judge, chessBoard);
+            continue;
+        }
+        if (nextStepPlayer == botPlayer->getPlayerTypeCode()) {  // 当前轮到电脑落子
+            lastStepPlayer = nextStepPlayer;
+            nextStepPlayer = humanPlayer->getPlayerTypeCode();
+        }
+    }
 
     delete humanPlayer;
     delete botPlayer;
@@ -122,11 +107,80 @@ void Scheduler::start_new_game() {
     cout << "> 本局比赛结束！" << endl;
 }
 
-int Scheduler::decide_first_hand() {
-    // TODO: 先手决定
+void Scheduler::decide_first_hand(BotPlayer *botPlayer, HumanPlayer *humanPlayer, Judge *judge) {
     cout << "\n> 现在决定谁为先手..." << endl;
+
     int firstHand = 0;
-    return firstHand;
+    // TODO: 先手决定过程
+
+    if (firstHand == humanPlayer->getPlayerTypeCode()) {  // 1：人类玩家为先手
+        judge->whoIsFirstHand = humanPlayer->getPlayerTypeCode();
+        botPlayer->setPlayerChessPieceType(WhiteChessPiece::pieceTypeCode);  // 电脑执白子
+        humanPlayer->setPlayerChessPieceType(BlackChessPiece::pieceTypeCode);  // 人类玩家执黑子
+        cout << "> 人类玩家为先手，电脑为后手！" << endl;
+    } else if (firstHand == botPlayer->getPlayerTypeCode()) { // 0：电脑为先手，执黑子
+        judge->whoIsFirstHand = botPlayer->getPlayerTypeCode();
+        botPlayer->setPlayerChessPieceType(BlackChessPiece::pieceTypeCode);
+        humanPlayer->setPlayerChessPieceType(WhiteChessPiece::pieceTypeCode);
+        cout << "> 电脑为先手，人类玩家为后手！" << endl;
+    }
+}
+
+void Scheduler::set_first_chess_piece(BotPlayer *botPlayer, HumanPlayer *humanPlayer, Judge *judge, ChessBoard *chessBoard) {
+    if (judge->whoIsFirstHand == botPlayer->getPlayerTypeCode()) {  // 电脑为先手
+        int x, y;
+        if (!transform_position_name("8", "H", x, y)) {
+            cout << "> Error：棋盘无法落子！" << endl;
+            return;
+        }
+        if (judge->judge_first_action_validity(x, y)) {
+            chessBoard->set_new_chess_piece(botPlayer->getPlayerChessPieceType(), x, y);
+            chessBoard->show();
+            lastStepPlayer = nextStepPlayer;
+            nextStepPlayer = humanPlayer->getPlayerTypeCode();
+        }
+    } else if (judge->whoIsFirstHand == humanPlayer->getPlayerTypeCode()){  // 人类玩家为先手
+        int x, y;
+        while (true) {
+            string xInput, yInput;
+            cout << "> 人类玩家为先手，请输入落子位置（先输入行号（数字）再输入列号（字母），用空格隔开）：";
+            cin >> xInput >> yInput;  // 获取人类玩家键盘输入
+            if (transform_position_name(xInput, yInput, x, y)) {
+                if (judge->judge_first_action_validity(x, y)) {
+                    chessBoard->set_new_chess_piece(humanPlayer->getPlayerChessPieceType(), x, y);
+                    chessBoard->show();
+                    lastStepPlayer = nextStepPlayer;
+                    nextStepPlayer = botPlayer->getPlayerTypeCode();
+                    break;
+                } else {
+                    cout << "  输入位置不合法，先手（黑子）初次落子必须在天元（H8）位置！" << endl;
+                }
+            }
+        }
+    }
+}
+
+void Scheduler::set_human_player_chess_piece(BotPlayer *botPlayer, HumanPlayer *humanPlayer, Judge *judge, ChessBoard *chessBoard) {
+    while (true) {
+        string xInput, yInput;
+        cout << "> 轮到人类玩家，请输入落子位置（先输入行号（数字）再输入列号（字母），用空格隔开）：";
+        cin >> xInput >> yInput;  // 获取人类玩家键盘输入
+        int x, y;
+        if (transform_position_name(xInput, yInput, x, y)) {
+            if (judge->judge_action_validity(humanPlayer, chessBoard, x, y)) {
+                chessBoard->set_new_chess_piece(humanPlayer->getPlayerChessPieceType(), x, y);
+                cout << "  落子成功！" << endl;
+                chessBoard->show();
+                lastStepPlayer = nextStepPlayer;
+                lastStepXPos = x;
+                lastStepYPos = y;
+                nextStepPlayer = botPlayer->getPlayerTypeCode();
+                break;
+            } else {
+                cout << "  落子失败！原因：该位置已存在其他棋子！" << endl;
+            }
+        }
+    }
 }
 
 void Scheduler::show_game_score() {

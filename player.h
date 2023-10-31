@@ -8,15 +8,15 @@ using namespace std;
 class Player {
 protected:
     int playerTypeCode;  // 0：电脑    1：人类
-    int playerHand;  // 1：先手（黑子）   2：后手（白子）
+    int playerChessPieceType;  // 1：先手（黑子）   2：后手（白子）
 public:
     string playerName;
 
     int getPlayerTypeCode();
 
-    int getPlayerHand();
+    int getPlayerChessPieceType();
 
-    void setPlayerHand(int myHand);
+    void setPlayerChessPieceType(int myHand);
 };
 
 // 电脑玩家

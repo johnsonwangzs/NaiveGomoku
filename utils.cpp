@@ -3,7 +3,7 @@
 #include "utils.h"
 
 
-bool isDigit(char a) {
+bool is_digit(char a) {
     if (a - '0' == 0 || a - '0' == 1 || a - '0' == 2 || a - '0' == 3 || a - '0' == 4 ||
         a - '0' == 5 || a - '0' == 6 || a - '0' == 7 || a - '0' == 8 || a - '0' == 9)
         return true;
@@ -12,7 +12,7 @@ bool isDigit(char a) {
 
 bool test_integer(string s) {
     for (int i = 0; i < s.length(); i++) {
-        if (!isDigit(s[i]))
+        if (!is_digit(s[i]))
             return false;
     }
     return true;
@@ -41,6 +41,6 @@ bool transform_position_name(const string &xInput, const string &yInput, int &xP
         cout << "  行号非法！请输入一个数（1-15之间）！" << endl;
         return false;
     }
-    xPos = stoi(xInput) - 1;
+    xPos = 14 - (stoi(xInput) - 1);  // 注意棋盘行号与程序存储的二维数组索引顺序刚好相反，这里转化为程序需要的索引值
     return true;
 }
