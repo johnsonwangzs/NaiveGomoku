@@ -10,6 +10,7 @@ Scheduler::Scheduler() {
     gameCnt = 0;
     botWinCnt = 0;
     humanWinCnt = 0;
+    drawCnt = 0;
     cout << "> 正在创建调度器..." << endl;
     schedule_game();
 }
@@ -74,31 +75,58 @@ void Scheduler::start_new_game() {
 
     // 第一次：黑方必须在天元H8落子
     set_first_chess_piece(botPlayer, humanPlayer, judge, chessBoard);
+    chessBoard->totalChessPieceCnt++;
 
     // 连续回合
     while (true) {
-        // 检查
-        if (lastStepPlayer == humanPlayer->getPlayerTypeCode()) {
-            if (!judge->continue_game(humanPlayer, chessBoard, lastStepXPos, lastStepYPos)) {  // 检查人类玩家落子是否能赢
+        // 检查是否有赢家或平局
+        if (chessBoard->totalChessPieceCnt == 225) {  // 检查是否平局
+            drawCnt++;
+            judge->claim_draw();
+            break;
+        }
+        if (lastStepPlayer == humanPlayer->getPlayerTypeCode()) {  // 检查人类玩家落子是否能赢
+            if (judge->check_is_win(humanPlayer, chessBoard, lastStepXPos, lastStepYPos)) {
                 humanWinCnt++;
+                judge->claim_winner(humanPlayer, "人类玩家率先达成五连！");
                 break;
             }
-        } else if (lastStepPlayer == botPlayer->getPlayerTypeCode()) {
-            if (!judge->continue_game(botPlayer, chessBoard, lastStepXPos, lastStepYPos)) {  // 检查电脑落子是否能赢
+        } else if (lastStepPlayer == botPlayer->getPlayerTypeCode()) {  // 检查电脑落子是否能赢
+            if (judge->check_is_win(botPlayer, chessBoard, lastStepXPos, lastStepYPos)) {
                 botWinCnt++;
+                judge->claim_winner(botPlayer, "电脑率先达成五连！");
                 break;
             }
         }
         // 落子
         if (nextStepPlayer == humanPlayer->getPlayerTypeCode()) {  // 当前轮到人类玩家落子
+            // 人类玩家可以检查电脑是否（被倒逼）违反长连（如果电脑为先手执黑子）
+            if (judge->whoIsFirstHand == botPlayer->getPlayerTypeCode()
+                && judge->check_forbidden(botPlayer, chessBoard, lastStepXPos, lastStepYPos)) {
+                humanWinCnt++;
+                judge->claim_winner(humanPlayer, "电脑违反禁手规则！");
+                break;
+            }
             set_human_player_chess_piece(botPlayer, humanPlayer, judge, chessBoard);
+            chessBoard->totalChessPieceCnt++;
+//            lastStepPlayer = nextStepPlayer;
+//            nextStepPlayer = botPlayer->getPlayerTypeCode();
             continue;
         }
         if (nextStepPlayer == botPlayer->getPlayerTypeCode()) {  // 当前轮到电脑落子
+            // 电脑可以检查人类玩家的落子是否违反长连（如果人类玩家为先手执黑子）
+            if (judge->whoIsFirstHand == humanPlayer->getPlayerTypeCode()
+                && judge->check_forbidden(humanPlayer, chessBoard, lastStepXPos, lastStepYPos)) {
+                botWinCnt++;
+                judge->claim_winner(botPlayer, "人类玩家违反禁手规则！");
+                break;
+            }
             lastStepPlayer = nextStepPlayer;
             nextStepPlayer = humanPlayer->getPlayerTypeCode();
         }
     }
+
+    show_game_score();
 
     delete humanPlayer;
     delete botPlayer;
@@ -126,7 +154,8 @@ void Scheduler::decide_first_hand(BotPlayer *botPlayer, HumanPlayer *humanPlayer
     }
 }
 
-void Scheduler::set_first_chess_piece(BotPlayer *botPlayer, HumanPlayer *humanPlayer, Judge *judge, ChessBoard *chessBoard) {
+void
+Scheduler::set_first_chess_piece(BotPlayer *botPlayer, HumanPlayer *humanPlayer, Judge *judge, ChessBoard *chessBoard) {
     if (judge->whoIsFirstHand == botPlayer->getPlayerTypeCode()) {  // 电脑为先手
         int x, y;
         if (!transform_position_name("8", "H", x, y)) {
@@ -139,7 +168,7 @@ void Scheduler::set_first_chess_piece(BotPlayer *botPlayer, HumanPlayer *humanPl
             lastStepPlayer = nextStepPlayer;
             nextStepPlayer = humanPlayer->getPlayerTypeCode();
         }
-    } else if (judge->whoIsFirstHand == humanPlayer->getPlayerTypeCode()){  // 人类玩家为先手
+    } else if (judge->whoIsFirstHand == humanPlayer->getPlayerTypeCode()) {  // 人类玩家为先手
         int x, y;
         while (true) {
             string xInput, yInput;
@@ -160,7 +189,8 @@ void Scheduler::set_first_chess_piece(BotPlayer *botPlayer, HumanPlayer *humanPl
     }
 }
 
-void Scheduler::set_human_player_chess_piece(BotPlayer *botPlayer, HumanPlayer *humanPlayer, Judge *judge, ChessBoard *chessBoard) {
+void Scheduler::set_human_player_chess_piece(BotPlayer *botPlayer, HumanPlayer *humanPlayer, Judge *judge,
+                                             ChessBoard *chessBoard) {
     while (true) {
         string xInput, yInput;
         cout << "> 轮到人类玩家，请输入落子位置（先输入行号（数字）再输入列号（字母），用空格隔开）：";
@@ -184,7 +214,8 @@ void Scheduler::set_human_player_chess_piece(BotPlayer *botPlayer, HumanPlayer *
 }
 
 void Scheduler::show_game_score() {
-    cout << "> 目前比分为：\n玩家:电脑 = " << humanWinCnt << ":" << botWinCnt << endl;
+    cout << "> 目前比分为：" << endl
+         << "  玩家:电脑 = " << humanWinCnt << ":" << botWinCnt << endl << endl;
 }
 
 void Scheduler::end_game() {

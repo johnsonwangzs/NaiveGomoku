@@ -11,15 +11,8 @@ Judge::~Judge() {
     cout << "> 正在销毁本局裁判..." << endl;
 }
 
-bool Judge::continue_game(Player *player, ChessBoard *chessBoard, int lastStepXPos, int lastStepYPos) {
-    if (check_is_win(player, chessBoard, lastStepXPos, lastStepYPos)) {
-        return false;  // 如果有一方达成胜利条件，则回合不再继续
-    }
-    return true;
-}
-
 bool Judge::judge_action_validity(Player *player, ChessBoard *chessBoard, int xPos, int yPos) {
-    if (chessBoard->chessPieceInBoard[xPos][yPos] == BlankPiece::pieceTypeCode) {
+    if (chessBoard->chessPieceInBoard[xPos][yPos] == BlankPiece::pieceTypeCode) {  // 空位
         chessBoard->set_new_chess_piece(player->getPlayerChessPieceType(), xPos, yPos);
         return true;
     }
@@ -32,17 +25,73 @@ bool Judge::judge_first_action_validity(int xPos, int yPos) {
     return false;
 }
 
-bool Judge::check_is_win(Player *player, ChessBoard *chessBoard, int lastStepXPos, int lastStepYPos) {
-    // 从4条线（8个方向）上进行检查是否有5连同色棋子的情况
+bool Judge::check_is_win(Player *player, ChessBoard *chessBoard, int xPos, int yPos) {
+    // 只有严格等于5连才算赢
+    if (cnt_same_piece_vertical(player, chessBoard, xPos, yPos) == 5) {
+        return true;
+    }
+    if (cnt_same_piece_horizontal(player, chessBoard, xPos, yPos) == 5) {
+        return true;
+    }
+    if (cnt_same_piece_upright(player, chessBoard, xPos, yPos) == 5) {
+        return true;
+    }
+    if (cnt_same_piece_upleft(player, chessBoard, xPos, yPos) == 5) {
+        return true;
+    }
+    return false;
+}
 
+bool Judge::check_forbidden(Player *player, ChessBoard *chessBoard, int xPos, int yPos) {
+    // 长连禁手
+    int cntVertical, cntHorizontal, cntUpright, cntUpleft;
+    bool existEqualFive = false, existMoreThanFive = false;
+    cntVertical = cnt_same_piece_vertical(player, chessBoard, xPos, yPos);
+    cntHorizontal = cnt_same_piece_horizontal(player, chessBoard, xPos, yPos);
+    cntUpright = cnt_same_piece_upright(player, chessBoard, xPos, yPos);
+    cntUpleft = cnt_same_piece_upleft(player, chessBoard, xPos, yPos);
+    if (cntVertical == 5 || cntHorizontal == 5 || cntUpright == 5 || cntUpleft == 5) {
+        existEqualFive = true;
+    }
+    if (cntVertical > 5 || cntHorizontal > 5 || cntUpright > 5 || cntUpleft > 5) {
+        existMoreThanFive = true;
+    }
+    if (!existEqualFive && existMoreThanFive) {  // 没有五连，但有长连（形成5个以上黑子）
+        return true;
+    }
+
+    // 三三禁手
+
+    // 四四禁手
+    return false;  // 不存在禁手
+}
+
+void Judge::claim_winner(Player *player, const string &winMsg) {
+    if (player->getPlayerTypeCode() == 0) {
+        cout << "> 本局比赛结果为：电脑赢得了本局比赛！" << endl
+             << "  获胜原因：" << winMsg << endl
+             << "  电脑记一分！" << endl << endl;
+    } else if (player->getPlayerTypeCode() == 1) {
+        cout << "> 本局比赛结果为：人类玩家赢得了本局比赛！" << endl
+             << "  获胜原因：" << winMsg << endl
+             << "  人类玩家记一分！" << endl << endl;
+    }
+}
+
+void Judge::claim_draw() {
+    cout << "> 本局比赛结果为：平局！"
+         << "  不计分！" << endl;
+}
+
+int Judge::cnt_same_piece_vertical(Player *player, ChessBoard *chessBoard, int xPos, int yPos) {
     // 竖直方向
     int singleDirectionChessPieceCnt = 1;
     // 向上
     int posOffset = 0;
     while (true) {
         posOffset++;
-        if (lastStepXPos - posOffset >= 0 && chessBoard->chessPieceInBoard[lastStepXPos - posOffset][lastStepYPos] ==
-                                             player->getPlayerChessPieceType()) {
+        if (xPos - posOffset >= 0
+            && chessBoard->chessPieceInBoard[xPos - posOffset][yPos] == player->getPlayerChessPieceType()) {
             singleDirectionChessPieceCnt++;
             continue;
         }
@@ -52,26 +101,26 @@ bool Judge::check_is_win(Player *player, ChessBoard *chessBoard, int lastStepXPo
     posOffset = 0;
     while (true) {
         posOffset++;
-        if (lastStepXPos + posOffset <= 14 && chessBoard->chessPieceInBoard[lastStepXPos + posOffset][lastStepYPos] ==
-                                              player->getPlayerChessPieceType()) {
+        if (xPos + posOffset <= 14
+            && chessBoard->chessPieceInBoard[xPos + posOffset][yPos] == player->getPlayerChessPieceType()) {
             singleDirectionChessPieceCnt++;
             continue;
         }
         break;
     }
-    if (singleDirectionChessPieceCnt >= 5) {
-        return true;
-    }
+    return singleDirectionChessPieceCnt;
+}
 
+int Judge::cnt_same_piece_horizontal(Player *player, ChessBoard *chessBoard, int xPos, int yPos) {
     // 水平方向
-    singleDirectionChessPieceCnt = 1;
+    int singleDirectionPieceCnt = 1;
     // 向左
-    posOffset = 0;
+    int posOffset = 0;
     while (true) {
         posOffset++;
-        if (lastStepYPos - posOffset >= 0 && chessBoard->chessPieceInBoard[lastStepXPos][lastStepYPos - posOffset] ==
-                                             player->getPlayerChessPieceType()) {
-            singleDirectionChessPieceCnt++;
+        if (yPos - posOffset >= 0
+            && chessBoard->chessPieceInBoard[xPos][yPos - posOffset] == player->getPlayerChessPieceType()) {
+            singleDirectionPieceCnt++;
             continue;
         }
         break;
@@ -80,27 +129,26 @@ bool Judge::check_is_win(Player *player, ChessBoard *chessBoard, int lastStepXPo
     posOffset = 0;
     while (true) {
         posOffset++;
-        if (lastStepYPos + posOffset <= 14 && chessBoard->chessPieceInBoard[lastStepXPos][lastStepYPos + posOffset] ==
-                                              player->getPlayerChessPieceType()) {
-            singleDirectionChessPieceCnt++;
+        if (yPos + posOffset <= 14
+            && chessBoard->chessPieceInBoard[xPos][yPos + posOffset] == player->getPlayerChessPieceType()) {
+            singleDirectionPieceCnt++;
             continue;
         }
         break;
     }
-    if (singleDirectionChessPieceCnt >= 5) {
-        return true;
-    }
+    return singleDirectionPieceCnt;
+}
 
+int Judge::cnt_same_piece_upright(Player *player, ChessBoard *chessBoard, int xPos, int yPos) {
     // 右斜
-    singleDirectionChessPieceCnt = 1;
+    int singleDirectionPieceCnt = 1;
     // 右上
-    posOffset = 0;
+    int posOffset = 0;
     while (true) {
         posOffset++;
-        if (lastStepXPos - posOffset >= 0 && lastStepYPos + posOffset <= 14 &&
-            chessBoard->chessPieceInBoard[lastStepXPos - posOffset][lastStepYPos + posOffset] ==
-            player->getPlayerChessPieceType()) {
-            singleDirectionChessPieceCnt++;
+        if (xPos - posOffset >= 0 && yPos + posOffset <= 14
+            && chessBoard->chessPieceInBoard[xPos - posOffset][yPos + posOffset] == player->getPlayerChessPieceType()) {
+            singleDirectionPieceCnt++;
             continue;
         }
         break;
@@ -109,27 +157,25 @@ bool Judge::check_is_win(Player *player, ChessBoard *chessBoard, int lastStepXPo
     posOffset = 0;
     while (true) {
         posOffset++;
-        if (lastStepXPos + posOffset <= 14 && lastStepYPos - posOffset >= 0 &&
-            chessBoard->chessPieceInBoard[lastStepXPos + posOffset][lastStepYPos - posOffset] ==
-            player->getPlayerChessPieceType()) {
-            singleDirectionChessPieceCnt++;
+        if (xPos + posOffset <= 14 && yPos - posOffset >= 0
+            && chessBoard->chessPieceInBoard[xPos + posOffset][yPos - posOffset] == player->getPlayerChessPieceType()) {
+            singleDirectionPieceCnt++;
             continue;
         }
         break;
     }
-    if (singleDirectionChessPieceCnt >= 5) {
-        return true;
-    }
+    return singleDirectionPieceCnt;
+}
 
+int Judge::cnt_same_piece_upleft(Player *player, ChessBoard *chessBoard, int xPos, int yPos) {
     // 左斜
-    singleDirectionChessPieceCnt = 1;
+    int singleDirectionChessPieceCnt = 1;
     // 左上
-    posOffset = 0;
+    int posOffset = 0;
     while (true) {
         posOffset++;
-        if (lastStepXPos - posOffset >= 0 && lastStepYPos - posOffset >= 0 &&
-            chessBoard->chessPieceInBoard[lastStepXPos - posOffset][lastStepYPos - posOffset] ==
-            player->getPlayerChessPieceType()) {
+        if (xPos - posOffset >= 0 && yPos - posOffset >= 0
+            && chessBoard->chessPieceInBoard[xPos - posOffset][yPos - posOffset] == player->getPlayerChessPieceType()) {
             singleDirectionChessPieceCnt++;
             continue;
         }
@@ -139,17 +185,12 @@ bool Judge::check_is_win(Player *player, ChessBoard *chessBoard, int lastStepXPo
     posOffset = 0;
     while (true) {
         posOffset++;
-        if (lastStepXPos + posOffset <= 14 && lastStepYPos + posOffset <= 14 &&
-            chessBoard->chessPieceInBoard[lastStepXPos + posOffset][lastStepYPos + posOffset] ==
-            player->getPlayerChessPieceType()) {
+        if (xPos + posOffset <= 14 && yPos + posOffset <= 14
+            && chessBoard->chessPieceInBoard[xPos + posOffset][yPos + posOffset] == player->getPlayerChessPieceType()) {
             singleDirectionChessPieceCnt++;
             continue;
         }
         break;
     }
-    if (singleDirectionChessPieceCnt >= 5) {
-        return true;
-    }
-
-    return false;
+    return singleDirectionChessPieceCnt;
 }

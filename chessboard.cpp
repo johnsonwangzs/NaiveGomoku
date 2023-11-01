@@ -14,6 +14,8 @@ string BlankPiece::figure = "·";
 int BlankPiece::pieceTypeCode = 0;
 
 ChessBoard::ChessBoard() {
+    boardStyle = 0;
+    totalChessPieceCnt = 0;
     cout << "> 正在构造棋盘..." << endl;
     create_new_chessboard();
 }

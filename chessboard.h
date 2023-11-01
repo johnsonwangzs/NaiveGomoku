@@ -49,8 +49,9 @@ public:
 
     ~ChessBoard();
 
-    int boardStyle = 0;  // 棋盘样式（小/大，玩家自选）
+    int boardStyle;  // 棋盘样式（小/大，玩家自选）
     int chessPieceInBoard[15][15] = {0};  // 记录棋盘上每个位置是什么旗子
+    int totalChessPieceCnt;  // 当前棋盘上的棋子总数
 
     void choose_board_style();  // 选择棋盘样式
     void print_single_chess_piece(int x, int y);  // 在棋盘上打印单个棋子

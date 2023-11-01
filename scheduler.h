@@ -14,6 +14,7 @@ private:
     int gameCnt;  // 对局计数器
     int botWinCnt;  // 电脑赢得对局数
     int humanWinCnt;  // 人类玩家赢得对局数
+    int drawCnt;  // 平局数
 public:
     Scheduler();  // 构造函数
     ~Scheduler();  // 析构函数
