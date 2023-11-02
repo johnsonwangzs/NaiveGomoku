@@ -44,3 +44,10 @@ bool transform_position_name(const string &xInput, const string &yInput, int &xP
     xPos = 14 - (stoi(xInput) - 1);  // 注意棋盘行号与程序存储的二维数组索引顺序刚好相反，这里转化为程序需要的索引值
     return true;
 }
+
+bool is_pos_in_range(int pos) {
+    if (pos >= 0 && pos <= 14) {
+        return true;
+    }
+    return false;
+}

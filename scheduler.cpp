@@ -101,26 +101,31 @@ void Scheduler::start_new_game() {
         // 落子
         if (nextStepPlayer == humanPlayer->getPlayerTypeCode()) {  // 当前轮到人类玩家落子
             // 人类玩家可以检查电脑是否（被倒逼）违反长连（如果电脑为先手执黑子）
-            if (judge->whoIsFirstHand == botPlayer->getPlayerTypeCode()
-                && judge->check_forbidden(botPlayer, chessBoard, lastStepXPos, lastStepYPos)) {
+            if (judge->whoIsFirstHand == botPlayer->getPlayerTypeCode() &&
+                (judge->check_forbidden_overline(botPlayer, chessBoard, lastStepXPos, lastStepYPos) ||
+                 judge->check_forbidden_double_three(chessBoard, lastStepXPos, lastStepYPos) ||
+                 judge->check_forbidden_double_four(chessBoard, lastStepXPos, lastStepYPos))) {
                 humanWinCnt++;
                 judge->claim_winner(humanPlayer, "电脑违反禁手规则！");
                 break;
             }
             set_human_player_chess_piece(botPlayer, humanPlayer, judge, chessBoard);
             chessBoard->totalChessPieceCnt++;
-//            lastStepPlayer = nextStepPlayer;
-//            nextStepPlayer = botPlayer->getPlayerTypeCode();
+            lastStepPlayer = nextStepPlayer;
+            nextStepPlayer = botPlayer->getPlayerTypeCode();
             continue;
         }
         if (nextStepPlayer == botPlayer->getPlayerTypeCode()) {  // 当前轮到电脑落子
             // 电脑可以检查人类玩家的落子是否违反长连（如果人类玩家为先手执黑子）
-            if (judge->whoIsFirstHand == humanPlayer->getPlayerTypeCode()
-                && judge->check_forbidden(humanPlayer, chessBoard, lastStepXPos, lastStepYPos)) {
+            if (judge->whoIsFirstHand == humanPlayer->getPlayerTypeCode() &&
+                (judge->check_forbidden_overline(humanPlayer, chessBoard, lastStepXPos, lastStepYPos) ||
+                 judge->check_forbidden_double_three(chessBoard, lastStepXPos, lastStepYPos) ||
+                 judge->check_forbidden_double_four(chessBoard, lastStepXPos, lastStepYPos))) {
                 botWinCnt++;
                 judge->claim_winner(botPlayer, "人类玩家违反禁手规则！");
                 break;
             }
+            // TODO: 电脑落子
             lastStepPlayer = nextStepPlayer;
             nextStepPlayer = humanPlayer->getPlayerTypeCode();
         }
@@ -138,7 +143,7 @@ void Scheduler::start_new_game() {
 void Scheduler::decide_first_hand(BotPlayer *botPlayer, HumanPlayer *humanPlayer, Judge *judge) {
     cout << "\n> 现在决定谁为先手..." << endl;
 
-    int firstHand = 0;
+    int firstHand = 1;
     // TODO: 先手决定过程
 
     if (firstHand == humanPlayer->getPlayerTypeCode()) {  // 1：人类玩家为先手
@@ -172,7 +177,7 @@ Scheduler::set_first_chess_piece(BotPlayer *botPlayer, HumanPlayer *humanPlayer,
         int x, y;
         while (true) {
             string xInput, yInput;
-            cout << "> 人类玩家为先手，请输入落子位置（先输入行号（数字）再输入列号（字母），用空格隔开）：";
+            cout << "> 人类玩家为先手，请输入落子位置（行号（数字）和列号（字母），用空格隔开）：";
             cin >> xInput >> yInput;  // 获取人类玩家键盘输入
             if (transform_position_name(xInput, yInput, x, y)) {
                 if (judge->judge_first_action_validity(x, y)) {
@@ -193,7 +198,7 @@ void Scheduler::set_human_player_chess_piece(BotPlayer *botPlayer, HumanPlayer *
                                              ChessBoard *chessBoard) {
     while (true) {
         string xInput, yInput;
-        cout << "> 轮到人类玩家，请输入落子位置（先输入行号（数字）再输入列号（字母），用空格隔开）：";
+        cout << "> 轮到人类玩家，请输入落子位置（行号（数字）和列号（字母），用空格隔开）：";
         cin >> xInput >> yInput;  // 获取人类玩家键盘输入
         int x, y;
         if (transform_position_name(xInput, yInput, x, y)) {
@@ -201,10 +206,8 @@ void Scheduler::set_human_player_chess_piece(BotPlayer *botPlayer, HumanPlayer *
                 chessBoard->set_new_chess_piece(humanPlayer->getPlayerChessPieceType(), x, y);
                 cout << "  落子成功！" << endl;
                 chessBoard->show();
-                lastStepPlayer = nextStepPlayer;
                 lastStepXPos = x;
                 lastStepYPos = y;
-                nextStepPlayer = botPlayer->getPlayerTypeCode();
                 break;
             } else {
                 cout << "  落子失败！原因：该位置已存在其他棋子！" << endl;
