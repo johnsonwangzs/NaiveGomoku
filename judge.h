@@ -15,64 +15,37 @@ public:
     ~Judge();
 
     int whoIsFirstHand;  // 记录谁是先手（取值为playerTypeCode）
+    static const int codeNone = 0;  // 评判结果代码：未获胜且无违规
+    static const int codeWin = 1;  // 评判结果代码：获胜
+    static const int codeForbid33 = 2;  // 评判结果代码：三三禁手
+    static const int codeForbid44 = 3;  // 评判结果代码：四四禁手
+    static const int codeForbidOverline = 4;  // 评判结果代码：长连禁手
+    constexpr static const int move[8][2] = {-1, 0,
+                                             1, 0,
+                                             0, -1,
+                                             0, 1,
+                                             -1,-1,
+                                             1, 1,
+                                             -1, 1,
+                                             1, -1};
 
-    // 同色棋子计数，方向：阳线-垂直
-    int cnt_same_piece_vertical(Player *player, ChessBoard *chessBoard, int xPos, int yPos);
+    /* 单向延伸计数器，方向：上
+     player: 当前考虑落子的玩家
+     chessBoard: 当前棋盘
+     xPos, yPos: 指定棋盘上的一个位置
+     direction: 当前考虑的方向
+     a: 从相邻位置开始，最多连续几个同色子
+     b: a的连续的中止是否因空位导致
+     c: b之后，还有几个连续的同色子 */
+    void counter(Player *player, ChessBoard *chessBoard, int xPos, int yPos, int direction,
+                int &a, int &b, int &c);
 
-    // 同色棋子计数，方向：阳线-水平
-    int cnt_same_piece_horizontal(Player *player, ChessBoard *chessBoard, int xPos, int yPos);
-
-    // 同色棋子计数，方向：阴线-斜向右上
-    int cnt_same_piece_upright(Player *player, ChessBoard *chessBoard, int xPos, int yPos);
-
-    // 同色棋子计数，方向：阴线-斜向左上
-    int cnt_same_piece_upleft(Player *player, ChessBoard *chessBoard, int xPos, int yPos);
-
-    /* 检查是否达到胜利条件
-     对于执黑子的一方：判断从4条线（8个方向）上是否形成恰好五连
-     注：对于将棋子落在长连禁手处的情况，本函数不会判其胜利，但也不会指出违反禁手（由其他函数实现）
-     对于执白子的一方：判断从4条线（8个方向）上是否形成大于或等于五连 */
-    bool check_is_win(Player *player, ChessBoard *chessBoard, int xPos, int yPos);
-
-    // 检查指定位置是否超出棋盘，然后监测该处的棋子（或空位）是否为目标类型的棋子
-    bool check_piece_at_pos(ChessBoard *chessBoard, int xPos, int yPos, int targetPieceTypeCode);
-
-    /* 检查是否有长连禁手（针对黑子）
-     若违反了长连禁手返回true；否则返回false */
-    bool check_forbidden_overline(Player *player, ChessBoard *chessBoard, int xPos, int yPos);
-
-    // 四四禁手检查，方向：阳线-垂直
-    int check_four_vertical(ChessBoard *chessBoard, int xPos, int yPos);
-    // 四四禁手检查，方向：阳线-水平
-    int check_four_horizontal(ChessBoard *chessBoard, int xPos, int yPos);
-    // 四四禁手检查，方向：阴线-斜向右上
-    int check_four_upright(ChessBoard *chessBoard, int xPos, int yPos);
-    // 四四禁手检查，方向：阴线-斜向左上
-    int check_four_upleft(ChessBoard *chessBoard, int xPos, int yPos);
-
-    /* 检查是否有四四禁手
-     四四禁手是指当黑方一子落下时，同时形成两个或两个以上的“四”且没有形成“五连”时
-     注：“四”包括活四、冲四（连冲四、跳冲四即嵌五）
-       活四：有两个点可以成五的四（活四只有一种形状）
-       冲四：只有一个点可以成五的四
-       同方向也可形成两个四，例如 0 * 0 * X * 0 * 0 */
-    bool check_forbidden_double_four(ChessBoard *chessBoard, int xPos, int yPos);
-
-    // 三三禁手检查，方向：阳线-垂直
-    bool check_open_three_vertical(ChessBoard *chessBoard, int xPos, int yPos);
-
-    // 三三禁手检查，方向：阳线-水平
-    bool check_open_three_horizontal(ChessBoard *chessBoard, int xPos, int yPos);
-
-    // 三三禁手检查，方向：阴线-斜向右上
-    bool check_open_three_upright(ChessBoard *chessBoard, int xPos, int yPos);
-
-    // 三三禁手检查，方向：阴线-斜向左上
-    bool check_open_three_upleft(ChessBoard *chessBoard, int xPos, int yPos);
-
-    /* 检查是否有三三禁手
-     “三三禁手”是指当黑方一子落下同时形成两个或两个以上的活三 */
-    bool check_forbidden_double_three(ChessBoard *chessBoard, int xPos, int yPos);
+    /* 根据刚才上一步的落子，检查玩家是否能赢/犯规 */
+    int check_last_step(Player *player, ChessBoard *chessBoard, int xPos, int yPos);
+    /* 检查单独一个方向 */
+    void check_single_direction(Player *player, ChessBoard *chessBoard,
+                                int a1, int b1, int c1, int a2, int b2, int c2,
+                                int &liveThree, int &four, int &overline, int &five);
 
     // 判断初次落子位置的有效性
     bool judge_first_action_validity(int xPos, int yPos);
@@ -81,7 +54,7 @@ public:
     bool judge_action_validity(Player *player, ChessBoard *chessBoard, int xPos, int yPos);
 
     // 宣布赢家
-    void claim_winner(Player *player, const string& winMsg);
+    void claim_winner(Player *player, const string &winMsg);
 
     // 宣布平局
     void claim_draw();

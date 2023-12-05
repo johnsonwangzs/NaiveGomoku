@@ -32,7 +32,7 @@ public:
     void decide_first_hand(BotPlayer *botPlayer, HumanPlayer *humanPlayer, Judge *judge);  // 决定先手
     void set_first_chess_piece(BotPlayer *botPlayer, HumanPlayer *humanPlayer,
                                Judge *judge, ChessBoard *chessBoard);  // 先手第一次落子
-    void set_human_player_chess_piece(BotPlayer *botPlayer, HumanPlayer *humanPlayer,
+    void set_human_player_chess_piece(HumanPlayer *humanPlayer,
                                       Judge *judge, ChessBoard *chessBoard);  // 获取人类玩家输入，并落子
 
     void show_game_score();  // 展示比赛得分

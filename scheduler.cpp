@@ -73,58 +73,62 @@ void Scheduler::start_new_game() {
     // 决定两方谁为先手，谁为后手
     decide_first_hand(botPlayer, humanPlayer, judge);
 
-    // 第一次：黑方必须在天元H8落子
+    // 第一次：黑方必须在天元8H落子
     set_first_chess_piece(botPlayer, humanPlayer, judge, chessBoard);
     chessBoard->totalChessPieceCnt++;
 
     // 连续回合
     while (true) {
-        // 检查是否有赢家或平局
+        // 检查是否平局
         if (chessBoard->totalChessPieceCnt == 225) {  // 检查是否平局
             drawCnt++;
             judge->claim_draw();
             break;
         }
-        if (lastStepPlayer == humanPlayer->getPlayerTypeCode()) {  // 检查人类玩家落子是否能赢
-            if (judge->check_is_win(humanPlayer, chessBoard, lastStepXPos, lastStepYPos)) {
+        // 检查上一步（人类玩家）是否能赢/违规
+        if (lastStepPlayer == humanPlayer->getPlayerTypeCode()) {
+            int resCode;
+            resCode = judge->check_last_step(humanPlayer, chessBoard, lastStepXPos, lastStepYPos);
+            if (resCode == Judge::codeWin) {
                 humanWinCnt++;
                 judge->claim_winner(humanPlayer, "人类玩家率先达成五连！");
                 break;
             }
-        } else if (lastStepPlayer == botPlayer->getPlayerTypeCode()) {  // 检查电脑落子是否能赢
-            if (judge->check_is_win(botPlayer, chessBoard, lastStepXPos, lastStepYPos)) {
+            if (resCode == Judge::codeForbid33) {
                 botWinCnt++;
-                judge->claim_winner(botPlayer, "电脑率先达成五连！");
+                judge->claim_winner(botPlayer, "人类玩家犯规：三三禁手！");
+                break;
+            }
+            if (resCode == Judge::codeForbid44) {
+                botWinCnt++;
+                judge->claim_winner(botPlayer, "人类玩家犯规：四四禁手！");
+                break;
+            }
+            if (resCode == Judge::codeForbidOverline) {
+                botWinCnt++;
+                judge->claim_winner(botPlayer, "人类玩家犯规：长连禁手");
                 break;
             }
         }
+        // 检查上一步（电脑玩家）是否能赢/违规
+        if (lastStepPlayer == botPlayer->getPlayerTypeCode()) {
+            int resCode;
+            resCode = judge->check_last_step(botPlayer, chessBoard, lastStepXPos, lastStepYPos);
+            if (resCode == Judge::codeWin) {
+                botWinCnt++;
+                judge->claim_winner(botPlayer, "电脑率先达成五连！");
+            }
+        }
+
         // 落子
         if (nextStepPlayer == humanPlayer->getPlayerTypeCode()) {  // 当前轮到人类玩家落子
-            // 人类玩家可以检查电脑是否（被倒逼）违反长连（如果电脑为先手执黑子）
-            if (judge->whoIsFirstHand == botPlayer->getPlayerTypeCode() &&
-                (judge->check_forbidden_overline(botPlayer, chessBoard, lastStepXPos, lastStepYPos) ||
-                 judge->check_forbidden_double_three(chessBoard, lastStepXPos, lastStepYPos) ||
-                 judge->check_forbidden_double_four(chessBoard, lastStepXPos, lastStepYPos))) {
-                humanWinCnt++;
-                judge->claim_winner(humanPlayer, "电脑违反禁手规则！");
-                break;
-            }
-            set_human_player_chess_piece(botPlayer, humanPlayer, judge, chessBoard);
+            set_human_player_chess_piece(humanPlayer, judge, chessBoard);
             chessBoard->totalChessPieceCnt++;
             lastStepPlayer = nextStepPlayer;
             nextStepPlayer = botPlayer->getPlayerTypeCode();
             continue;
         }
         if (nextStepPlayer == botPlayer->getPlayerTypeCode()) {  // 当前轮到电脑落子
-            // 电脑可以检查人类玩家的落子是否违反长连（如果人类玩家为先手执黑子）
-            if (judge->whoIsFirstHand == humanPlayer->getPlayerTypeCode() &&
-                (judge->check_forbidden_overline(humanPlayer, chessBoard, lastStepXPos, lastStepYPos) ||
-                 judge->check_forbidden_double_three(chessBoard, lastStepXPos, lastStepYPos) ||
-                 judge->check_forbidden_double_four(chessBoard, lastStepXPos, lastStepYPos))) {
-                botWinCnt++;
-                judge->claim_winner(botPlayer, "人类玩家违反禁手规则！");
-                break;
-            }
             // TODO: 电脑落子
             lastStepPlayer = nextStepPlayer;
             nextStepPlayer = humanPlayer->getPlayerTypeCode();
@@ -187,15 +191,14 @@ Scheduler::set_first_chess_piece(BotPlayer *botPlayer, HumanPlayer *humanPlayer,
                     nextStepPlayer = botPlayer->getPlayerTypeCode();
                     break;
                 } else {
-                    cout << "  输入位置不合法，先手（黑子）初次落子必须在天元（H8）位置！" << endl;
+                    cout << "  输入位置不合法，先手（黑子）初次落子必须在天元（8H）位置！" << endl;
                 }
             }
         }
     }
 }
 
-void Scheduler::set_human_player_chess_piece(BotPlayer *botPlayer, HumanPlayer *humanPlayer, Judge *judge,
-                                             ChessBoard *chessBoard) {
+void Scheduler::set_human_player_chess_piece(HumanPlayer *humanPlayer, Judge *judge, ChessBoard *chessBoard) {
     while (true) {
         string xInput, yInput;
         cout << "> 轮到人类玩家，请输入落子位置（行号（数字）和列号（字母），用空格隔开）：";

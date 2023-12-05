@@ -5,6 +5,14 @@ int Player::getPlayerTypeCode() {
     return playerTypeCode;
 }
 
+int BotPlayer::getPlayerTypeCode() {
+    return playerTypeCode;
+}
+
+int HumanPlayer::getPlayerTypeCode() {
+    return playerTypeCode;
+}
+
 int Player::getPlayerChessPieceType() {
     return playerChessPieceType;
 }
@@ -12,10 +20,11 @@ int Player::getPlayerChessPieceType() {
 void Player::setPlayerChessPieceType(int myHand) {
     playerChessPieceType = myHand;
 }
+int BotPlayer::playerTypeCode = 0;
+int HumanPlayer::playerTypeCode = 1;
 
 BotPlayer::BotPlayer() {
     playerName = "电脑玩家";
-    playerTypeCode = 0;
     cout << "> 正在创建电脑玩家..." << endl;
 }
 
@@ -25,7 +34,6 @@ BotPlayer::~BotPlayer() {
 
 HumanPlayer::HumanPlayer() {
     playerName = "人类玩家";
-    playerTypeCode = 1;
     cout << "> 正在创建人类玩家..." << endl;
 }
 

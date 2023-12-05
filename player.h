@@ -6,13 +6,12 @@
 using namespace std;
 
 class Player {
-protected:
+public:
     int playerTypeCode;  // 0：电脑    1：人类
     int playerChessPieceType;  // 1：先手（黑子）   2：后手（白子）
-public:
     string playerName;
 
-    int getPlayerTypeCode();
+    virtual int getPlayerTypeCode();
 
     int getPlayerChessPieceType();
 
@@ -22,6 +21,8 @@ public:
 // 电脑玩家
 class BotPlayer : public Player {
 public:
+    static int playerTypeCode;
+    int getPlayerTypeCode() override;
     BotPlayer();
 
     ~BotPlayer();
@@ -30,6 +31,8 @@ public:
 // 人类玩家
 class HumanPlayer : public Player {
 public:
+    static int playerTypeCode;
+    int getPlayerTypeCode() override;
     HumanPlayer();
 
     ~HumanPlayer();
