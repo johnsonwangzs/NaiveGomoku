@@ -20,6 +20,7 @@ int Player::getPlayerChessPieceType() {
 void Player::setPlayerChessPieceType(int myHand) {
     playerChessPieceType = myHand;
 }
+
 int BotPlayer::playerTypeCode = 0;
 int HumanPlayer::playerTypeCode = 1;
 
@@ -30,6 +31,10 @@ BotPlayer::BotPlayer() {
 
 BotPlayer::~BotPlayer() {
     cout << "> 正在销毁本局电脑玩家..." << endl;
+}
+
+void BotPlayer::decide_next_step(ChessBoard *chessBoard, int &xPos, int &yPos) {
+    return;
 }
 
 HumanPlayer::HumanPlayer() {

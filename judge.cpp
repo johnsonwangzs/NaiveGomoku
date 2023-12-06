@@ -94,6 +94,7 @@ int Judge::check_last_step(Player *player, ChessBoard *chessBoard, int xPos, int
     int a1 = 0, b1 = 0, c1 = 0, a2 = 0, b2 = 0, c2 = 0;  // 同一条线的两个方向
     int liveThree = 0, four = 0, overline = 0, five = 0;
 
+    // 计数并判断  注意这几个if的顺序不能变
     // 上&下
     counter(player, chessBoard, xPos, yPos, 0, a1, b1, c1);
     counter(player, chessBoard, xPos, yPos, 1, a2, b2, c2);
@@ -101,14 +102,16 @@ int Judge::check_last_step(Player *player, ChessBoard *chessBoard, int xPos, int
     if (five > 0) {
         return Judge::codeWin;
     }
-    if (liveThree >= 2) {
-        return Judge::codeForbid33;
-    }
-    if (four >= 2) {
-        return Judge::codeForbid44;
-    }
-    if (overline > 0) {
-        return Judge::codeForbidOverline;
+    if (player->getPlayerChessPieceType() == BlackChessPiece::pieceTypeCode) {
+        if (overline > 0) {
+            return Judge::codeForbidOverline;
+        }
+        if (four >= 2) {
+            return Judge::codeForbid44;
+        }
+        if (liveThree >= 2) {
+            return Judge::codeForbid33;
+        }
     }
 
     // 左&右
@@ -119,14 +122,16 @@ int Judge::check_last_step(Player *player, ChessBoard *chessBoard, int xPos, int
     if (five > 0) {
         return Judge::codeWin;
     }
-    if (liveThree >= 2) {
-        return Judge::codeForbid33;
-    }
-    if (four >= 2) {
-        return Judge::codeForbid44;
-    }
-    if (overline > 0) {
-        return Judge::codeForbidOverline;
+    if (player->getPlayerChessPieceType() == BlackChessPiece::pieceTypeCode) {
+        if (overline > 0) {
+            return Judge::codeForbidOverline;
+        }
+        if (four >= 2) {
+            return Judge::codeForbid44;
+        }
+        if (liveThree >= 2) {
+            return Judge::codeForbid33;
+        }
     }
 
     // 左上&右下
@@ -137,14 +142,16 @@ int Judge::check_last_step(Player *player, ChessBoard *chessBoard, int xPos, int
     if (five > 0) {
         return Judge::codeWin;
     }
-    if (liveThree >= 2) {
-        return Judge::codeForbid33;
-    }
-    if (four >= 2) {
-        return Judge::codeForbid44;
-    }
-    if (overline > 0) {
-        return Judge::codeForbidOverline;
+    if (player->getPlayerChessPieceType() == BlackChessPiece::pieceTypeCode) {
+        if (overline > 0) {
+            return Judge::codeForbidOverline;
+        }
+        if (four >= 2) {
+            return Judge::codeForbid44;
+        }
+        if (liveThree >= 2) {
+            return Judge::codeForbid33;
+        }
     }
 
     // 右上&左下
@@ -155,14 +162,16 @@ int Judge::check_last_step(Player *player, ChessBoard *chessBoard, int xPos, int
     if (five > 0) {
         return Judge::codeWin;
     }
-    if (liveThree >= 2) {
-        return Judge::codeForbid33;
-    }
-    if (four >= 2) {
-        return Judge::codeForbid44;
-    }
-    if (overline > 0) {
-        return Judge::codeForbidOverline;
+    if (player->getPlayerChessPieceType() == BlackChessPiece::pieceTypeCode) {
+        if (overline > 0) {
+            return Judge::codeForbidOverline;
+        }
+        if (four >= 2) {
+            return Judge::codeForbid44;
+        }
+        if (liveThree >= 2) {
+            return Judge::codeForbid33;
+        }
     }
 
     return Judge::codeNone;
@@ -187,14 +196,22 @@ void Judge::check_single_direction(Player *player, ChessBoard *chessBoard,
             overline++;
             return;
         }
-        // 活三
-        if (b1 != 0 && b2 != 0 &&
-            (continuous == 1 && (bc1 == 3 || bc2 == 3)) ||
-            (continuous == 2 && (bc1 == 2 || bc2 == 2)) ||
-            (continuous == 3 && (bc1 == 1 || bc2 == 1))) {
+        // TODO: 活三
+        if (b1 != 0 && b2 != 0 && (continuous + bc1 == 4 || continuous + bc2 == 4)) {
             liveThree++;
-            return;
         }
-        // 四四禁手
+        // 四
+        if (c1 == 1 && c2 == 1) {  // 特殊情况：同一条线可能同时出现两个不同的四
+            if (continuous + bc1 == 5) {
+                four++;
+            }
+            if (continuous + bc2 == 5) {
+                four++;
+            }
+        } else {
+            if (continuous + bc1 == 5 || continuous + bc2 == 5) {
+                four++;
+            }
+        }
     }
 }

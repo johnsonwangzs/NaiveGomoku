@@ -2,6 +2,7 @@
 #define NAIVEGOMOKU_PLAYER_H
 
 #include <iostream>
+#include "chessboard.h"
 
 using namespace std;
 
@@ -22,17 +23,24 @@ public:
 class BotPlayer : public Player {
 public:
     static int playerTypeCode;
+
     int getPlayerTypeCode() override;
+
     BotPlayer();
 
     ~BotPlayer();
+
+    // AI决策
+    void decide_next_step(ChessBoard *chessBoard, int &xPos, int &yPos);
 };
 
 // 人类玩家
 class HumanPlayer : public Player {
 public:
     static int playerTypeCode;
+
     int getPlayerTypeCode() override;
+
     HumanPlayer();
 
     ~HumanPlayer();

@@ -24,7 +24,7 @@ public:
                                              1, 0,
                                              0, -1,
                                              0, 1,
-                                             -1,-1,
+                                             -1, -1,
                                              1, 1,
                                              -1, 1,
                                              1, -1};
@@ -38,10 +38,11 @@ public:
      b: a的连续的中止是否因空位导致
      c: b之后，还有几个连续的同色子 */
     void counter(Player *player, ChessBoard *chessBoard, int xPos, int yPos, int direction,
-                int &a, int &b, int &c);
+                 int &a, int &b, int &c);
 
     /* 根据刚才上一步的落子，检查玩家是否能赢/犯规 */
     int check_last_step(Player *player, ChessBoard *chessBoard, int xPos, int yPos);
+
     /* 检查单独一个方向 */
     void check_single_direction(Player *player, ChessBoard *chessBoard,
                                 int a1, int b1, int c1, int a2, int b2, int c2,

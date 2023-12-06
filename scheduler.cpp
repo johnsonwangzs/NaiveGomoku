@@ -94,9 +94,9 @@ void Scheduler::start_new_game() {
                 judge->claim_winner(humanPlayer, "人类玩家率先达成五连！");
                 break;
             }
-            if (resCode == Judge::codeForbid33) {
+            if (resCode == Judge::codeForbidOverline) {
                 botWinCnt++;
-                judge->claim_winner(botPlayer, "人类玩家犯规：三三禁手！");
+                judge->claim_winner(botPlayer, "人类玩家犯规：长连禁手");
                 break;
             }
             if (resCode == Judge::codeForbid44) {
@@ -104,9 +104,9 @@ void Scheduler::start_new_game() {
                 judge->claim_winner(botPlayer, "人类玩家犯规：四四禁手！");
                 break;
             }
-            if (resCode == Judge::codeForbidOverline) {
+            if (resCode == Judge::codeForbid33) {
                 botWinCnt++;
-                judge->claim_winner(botPlayer, "人类玩家犯规：长连禁手");
+                judge->claim_winner(botPlayer, "人类玩家犯规：三三禁手！");
                 break;
             }
         }
@@ -129,7 +129,9 @@ void Scheduler::start_new_game() {
             continue;
         }
         if (nextStepPlayer == botPlayer->getPlayerTypeCode()) {  // 当前轮到电脑落子
-            // TODO: 电脑落子
+            int x = 0, y = 0;
+            botPlayer->decide_next_step(chessBoard, x, y);  // TODO: 电脑落子
+            set_bot_player_chess_piece(botPlayer, judge, chessBoard, x, y);
             lastStepPlayer = nextStepPlayer;
             nextStepPlayer = humanPlayer->getPlayerTypeCode();
         }
@@ -217,6 +219,19 @@ void Scheduler::set_human_player_chess_piece(HumanPlayer *humanPlayer, Judge *ju
             }
         }
     }
+}
+
+void Scheduler::set_bot_player_chess_piece(BotPlayer *botPlayer, Judge *judge, ChessBoard *chessBoard, int xPos, int yPos) {
+    // TODO
+    if (!judge->judge_action_validity(botPlayer, chessBoard, xPos, yPos)) {
+        cout << "> DESTRUCTIVE BUG：AI落子不合法！" << endl;
+        return;
+    }
+    chessBoard->set_new_chess_piece(botPlayer->getPlayerChessPieceType(), xPos, yPos);
+    cout << "  落子成功！" << endl;
+    chessBoard->show();
+    lastStepXPos = xPos;
+    lastStepYPos = yPos;
 }
 
 void Scheduler::show_game_score() {
