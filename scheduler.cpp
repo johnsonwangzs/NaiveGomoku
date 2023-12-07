@@ -117,6 +117,7 @@ void Scheduler::start_new_game() {
             if (resCode == Judge::codeWin) {
                 botWinCnt++;
                 judge->claim_winner(botPlayer, "电脑率先达成五连！");
+                break;
             }
         }
 
@@ -176,7 +177,7 @@ Scheduler::set_first_chess_piece(BotPlayer *botPlayer, HumanPlayer *humanPlayer,
         if (judge->judge_first_action_validity(x, y)) {
             chessBoard->set_new_chess_piece(botPlayer->getPlayerChessPieceType(), x, y);
             chessBoard->show();
-            lastStepPlayer = nextStepPlayer;
+            lastStepPlayer = botPlayer->getPlayerTypeCode();
             nextStepPlayer = humanPlayer->getPlayerTypeCode();
         }
     } else if (judge->whoIsFirstHand == humanPlayer->getPlayerTypeCode()) {  // 人类玩家为先手
@@ -189,7 +190,7 @@ Scheduler::set_first_chess_piece(BotPlayer *botPlayer, HumanPlayer *humanPlayer,
                 if (judge->judge_first_action_validity(x, y)) {
                     chessBoard->set_new_chess_piece(humanPlayer->getPlayerChessPieceType(), x, y);
                     chessBoard->show();
-                    lastStepPlayer = nextStepPlayer;
+                    lastStepPlayer = humanPlayer->getPlayerTypeCode();
                     nextStepPlayer = botPlayer->getPlayerTypeCode();
                     break;
                 } else {
@@ -222,7 +223,6 @@ void Scheduler::set_human_player_chess_piece(HumanPlayer *humanPlayer, Judge *ju
 }
 
 void Scheduler::set_bot_player_chess_piece(BotPlayer *botPlayer, Judge *judge, ChessBoard *chessBoard, int xPos, int yPos) {
-    // TODO
     if (!judge->judge_action_validity(botPlayer, chessBoard, xPos, yPos)) {
         cout << "> DESTRUCTIVE BUG：AI落子不合法！" << endl;
         return;

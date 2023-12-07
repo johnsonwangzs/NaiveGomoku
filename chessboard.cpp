@@ -24,6 +24,31 @@ ChessBoard::~ChessBoard() {
     cout << "> 正在销毁本局棋盘..." << endl;
 }
 
+ChessBoardNode::ChessBoardNode() {
+    curPieceXPos = -1;
+    curPieceYPos = -1;
+    curPieceType = -1;
+    terminalState = false;
+    totalChessPieceCnt = -1;
+    value = 0.0;
+    cntVisited = 0.0;
+    UCB = DBL_MAX;
+    parentNode = nullptr;
+}
+
+ChessBoardNode::~ChessBoardNode() = default;
+
+RolloutNode::RolloutNode() {
+    curPieceXPos = -1;
+    curPieceYPos = -1;
+    curPieceType = -1;
+    totalChessPieceCnt = -1;
+    parentNode = nullptr;
+    childNode = nullptr;
+}
+
+RolloutNode::~RolloutNode() = default;
+
 void ChessBoard::create_new_chessboard() {
     memset(chessPieceInBoard, 0, sizeof(chessPieceInBoard));
     choose_board_style();

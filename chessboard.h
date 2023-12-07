@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <cstring>
+#include <cfloat>
+#include <vector>
 
 using namespace std;
 
@@ -58,6 +60,40 @@ public:
     void create_new_chessboard();  // 产生新棋盘
     void show();  // 打印当前棋盘
     void set_new_chess_piece(int chessPieceType, int xPos, int yPos);  // 落子
+};
+
+// 棋盘节点（蒙特卡洛搜索树）
+class ChessBoardNode {
+public:
+    ChessBoardNode();
+
+    ~ChessBoardNode();
+
+    int chessPieceInBoard[15][15] = {0};  // 记录棋盘上每个位置是什么棋子
+    int curPieceXPos;  // 当前棋盘比父节点多的棋子的位置 x坐标
+    int curPieceYPos;  // 当前棋盘比父节点多的棋子的位置 y坐标
+    int curPieceType;  // 当前棋盘比父节点多的棋子的类型
+    bool terminalState;  // 当前节点是否是终止棋盘状态
+    int totalChessPieceCnt;  // 当前棋盘上的棋子总数
+    double value;  // 节点价值
+    double cntVisited;  // 节点被探索次数
+    double UCB;  // 节点UCB值
+    ChessBoardNode *parentNode;  // 父节点
+    vector<ChessBoardNode*> childNode;  // 子节点
+};
+
+// 蒙特卡罗搜索树rollout节点
+class RolloutNode {
+public:
+    RolloutNode();
+    ~RolloutNode();
+    int chessPieceInBoard[15][15] = {0};  // 记录棋盘上每个位置是什么棋子
+    int curPieceXPos;  // 当前棋盘比父节点多的棋子的位置 x坐标
+    int curPieceYPos;  // 当前棋盘比父节点多的棋子的位置 y坐标
+    int curPieceType;  // 当前棋盘比父节点多的棋子的类型
+    int totalChessPieceCnt;  // 当前棋盘上的棋子总数
+    RolloutNode *parentNode;  // 父节点
+    RolloutNode *childNode;  // 子节点
 };
 
 #endif //NAIVEGOMOKU_CHESSBOARD_H
