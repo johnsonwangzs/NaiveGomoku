@@ -131,7 +131,7 @@ void Scheduler::start_new_game() {
         }
         if (nextStepPlayer == botPlayer->getPlayerTypeCode()) {  // 当前轮到电脑落子
             int x = 0, y = 0;
-            botPlayer->decide_next_step(chessBoard, x, y);  // TODO: 电脑落子
+            botPlayer->decide_next_step(chessBoard, x, y, lastStepXPos, lastStepYPos);
             set_bot_player_chess_piece(botPlayer, judge, chessBoard, x, y);
             lastStepPlayer = nextStepPlayer;
             nextStepPlayer = humanPlayer->getPlayerTypeCode();
@@ -149,9 +149,24 @@ void Scheduler::start_new_game() {
 
 void Scheduler::decide_first_hand(BotPlayer *botPlayer, HumanPlayer *humanPlayer, Judge *judge) {
     cout << "\n> 现在决定谁为先手..." << endl;
-
-    int firstHand = 1;
-    // TODO: 先手决定过程
+    // 让玩家选择先手或后手
+    int firstHand = 0;
+    string handInput;
+    while (true) {
+        cout << "  输入先手（1）/后手（2）：";
+        cin >> handInput;
+        // 判断输入合法性
+        if (!test_integer(handInput) || stoi(handInput) < 1 || stoi(handInput) > 2) {
+            cout << "  输入非法！需输入1或2！" << endl;
+            continue;
+        }
+        break;
+    }
+    if (handInput == "1") {
+        firstHand = 1;
+    } else {
+        firstHand = 0;
+    }
 
     if (firstHand == humanPlayer->getPlayerTypeCode()) {  // 1：人类玩家为先手
         judge->whoIsFirstHand = humanPlayer->getPlayerTypeCode();
@@ -222,7 +237,8 @@ void Scheduler::set_human_player_chess_piece(HumanPlayer *humanPlayer, Judge *ju
     }
 }
 
-void Scheduler::set_bot_player_chess_piece(BotPlayer *botPlayer, Judge *judge, ChessBoard *chessBoard, int xPos, int yPos) {
+void
+Scheduler::set_bot_player_chess_piece(BotPlayer *botPlayer, Judge *judge, ChessBoard *chessBoard, int xPos, int yPos) {
     if (!judge->judge_action_validity(botPlayer, chessBoard, xPos, yPos)) {
         cout << "> DESTRUCTIVE BUG：AI落子不合法！" << endl;
         return;
