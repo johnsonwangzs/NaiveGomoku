@@ -67,6 +67,9 @@ void BotPlayer::decide_next_step(ChessBoard *chessBoard, int &xPos, int &yPos, i
     delete rolloutTestNode;
     if (liveThreeCnt > 0 || fourCnt > 0) {
         expand_node_safe(rootChessBoardNode);
+        if (rootChessBoardNode->childNode.empty()) {
+            expand_node(rootChessBoardNode);
+        }
     } else {
         expand_node(rootChessBoardNode);  // 扩展子节点
     }
@@ -111,6 +114,9 @@ void BotPlayer::decide_next_step(ChessBoard *chessBoard, int &xPos, int &yPos, i
                     delete rolloutTestNode;
                     if (liveThreeCnt > 0 || fourCnt > 0) {
                         expand_node_safe(curNode);
+                        if (curNode->childNode.empty()) {
+                            expand_node(curNode);
+                        }
                     } else {
                         expand_node(curNode);  // 扩展子节点
                     }
