@@ -3,6 +3,7 @@
 using namespace std;
 
 int main() {
+    system("chcp 65001");
     cout << "> 开始初始化..." << endl;
     auto *scheduler = new Scheduler();
     delete scheduler;
